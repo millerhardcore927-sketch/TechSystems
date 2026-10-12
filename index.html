@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechSystem Quest: ภารกิจผ่ามิติคลังเทคโนโลยี ม.4</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Sarabun & Kanit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700;800&family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        kanit: ['Kanit', 'sans-serif'],
+                        sarabun: ['Sarabun', 'sans-serif'],
+                    },
+                    colors: {
+                        tech: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            800: '#115e59',
+                            900: '#042f2e',
+                            dark: '#0b0f19',
+                            card: '#131c31',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background: radial-gradient(circle at 50% 10%, #1e293b 0%, #090d16 100%);
+            min-height: 100vh;
+            color: #f1f5f9;
+        }
+        h1, h2, h3, h4, h5, h6, .font-heading {
+            font-family: 'Kanit', sans-serif;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2dd4bf;
+            border-radius: 4px;
+        }
+        .neon-border {
+            box-shadow: 0 0 15px rgba(45, 212, 191, 0.35);
+        }
+        .circuit-bg {
+            background-image: radial-gradient(#1e293b 1px, transparent 1px), radial-gradient(#1e293b 1px, #0b0f19 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+        .slot-target.drag-over {
+            border-color: #38bdf8 !important;
+            background-color: rgba(56, 189, 248, 0.15) !important;
+            transform: scale(1.02);
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(0.98); }
+        }
+        .animate-subtle {
+            animation: pulse-subtle 3s infinite ease-in-out;
+        }
+        @media print {
+            body { background: white !important; color: black !important; }
+            .no-print { display: none !important; }
+            .print-area { display: block !important; box-shadow: none !important; border: 1px solid #ccc !important; }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen text-slate-100 selection:bg-teal-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="no-print bg-slate-900/80 backdrop-blur-md border-b border-teal-500/30 sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-teal-500/30">
+                    <i class="fa-solid fa-microchip text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold tracking-wide text-white flex items-center gap-2">
+                        TechSystem Quest <span class="text-xs bg-teal-500/20 text-teal-300 border border-teal-400/40 px-2 py-0.5 rounded-full font-normal">ม.4 ออกแบบฯ</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">หน่วยที่ 1: ระบบทางเทคโนโลยีที่ซับซ้อน</p>
+                </div>
+            </div>
+
+            <!-- Score & Status Indicators -->
+            <div class="flex items-center gap-3 md:gap-6 text-sm">
+                <div class="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-lg border border-slate-700">
+                    <i class="fa-solid fa-trophy text-amber-400"></i>
+                    <span class="text-slate-400 text-xs">คะแนน:</span>
+                    <span id="score-display" class="font-bold text-amber-300 font-kanit text-base">0</span>
+                </div>
+                <div class="flex items-center gap-2 bg-slate-800/90 px-3 py-1.5 rounded-lg border border-slate-700">
+                    <i class="fa-solid fa-heart text-rose-400"></i>
+                    <span class="text-slate-400 text-xs">พลังงาน:</span>
+                    <div id="lives-container" class="flex gap-1 text-rose-500">
+                        <i class="fa-solid fa-heart"></i>
+                        <i class="fa-solid fa-heart"></i>
+                        <i class="fa-solid fa-heart"></i>
+                    </div>
+                </div>
+                <button id="sound-toggle-btn" onclick="toggleSound()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-teal-400 transition" title="เปิด/ปิดเสียง">
+                    <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl mx-auto w-full p-4 md:p-6 flex flex-col gap-6">
+
+        <!-- Navigation Mode Tabs -->
+        <div class="no-print grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800 shadow-xl">
+            <button onclick="switchTab('intro')" id="tab-intro" class="tab-btn active-tab flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-kanit font-medium text-sm transition-all bg-gradient-to-r from-teal-500 to-emerald-600 text-white shadow-md">
+                <i class="fa-solid fa-graduation-cap"></i> <span>1. บทนำ & อุ่นเครื่อง</span>
+            </button>
+            <button onclick="switchTab('pipeline')" id="tab-pipeline" class="tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-kanit font-medium text-sm transition-all hover:bg-slate-800 text-slate-300">
+                <i class="fa-solid fa-diagram-project"></i> <span>2. ชำแหละ 4 องค์ประกอบ</span>
+            </button>
+            <button onclick="switchTab('troubleshoot')" id="tab-troubleshoot" class="tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-kanit font-medium text-sm transition-all hover:bg-slate-800 text-slate-300">
+                <i class="fa-solid fa-triangle-exclamation"></i> <span>3. วิเคราะห์ระบบพัง</span>
+            </button>
+            <button onclick="switchTab('worksheet')" id="tab-worksheet" class="tab-btn flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-kanit font-medium text-sm transition-all hover:bg-slate-800 text-slate-300">
+                <i class="fa-solid fa-file-pen text-amber-400"></i> <span class="text-amber-300">4. ใบงาน "สิ่งนี้ใช้ยังไง"</span>
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: บทนำ & คำถามกระตุ้นคิด (Introduction) -->
+        <!-- ========================================== -->
+        <section id="section-intro" class="tab-section flex flex-col gap-6">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-teal-950 p-6 md:p-10 border border-teal-500/30 shadow-2xl">
+                <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl text-teal-300 pointer-events-none">
+                    <i class="fa-solid fa-gears"></i>
+                </div>
+                <div class="max-w-3xl relative z-10 space-y-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-semibold border border-teal-400/30">
+                        <i class="fa-solid fa-bolt"></i> Blended Learning ม.4 ภาคเรียนที่ 2
+                    </div>
+                    <h2 class="text-2xl md:text-4xl font-extrabold text-white font-kanit leading-tight">
+                        ผ่ามิติระบบทางเทคโนโลยีที่ซับซ้อน <span class="text-teal-400">(Complex Systems)</span>
+                    </h2>
+                    <p class="text-slate-300 leading-relaxed text-sm md:text-base">
+                        ระบบทางเทคโนโลยีไม่ใช่แค่เครื่องจักรชิ้นเดียว แต่คือ <strong>"กลุ่มของส่วนประกอบตั้งแต่ 2 ส่วนขึ้นไป"</strong> ที่ทำงานประสานกันเพื่อให้บรรลุเป้าหมาย หากระบบย่อยใดเสียหาย อาจส่งผลกระทบสะเทือนไปทั้งระบบใหญ่!
+                    </p>
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button onclick="switchTab('pipeline')" class="px-6 py-3 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold font-kanit shadow-lg shadow-teal-500/25 flex items-center gap-2 transition hover:-translate-y-0.5">
+                            <i class="fa-solid fa-play"></i> เริ่มเล่นด่านที่ 1 (ชำแหละระบบ)
+                        </button>
+                        <button onclick="openKnowledgeModal()" class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold font-kanit border border-slate-600 transition flex items-center gap-2">
+                            <i class="fa-solid fa-book-open text-teal-400"></i> สรุปความรู้ 4 เสาหลัก (K)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warmup Question from Lesson Plan: "ถ้าถอดโซ่ออก จักรยานยังจะขับได้ไหม?" -->
+            <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                <div class="flex items-center gap-3 mb-4">
+                    <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">1</span>
+                    <h3 class="text-lg md:text-xl font-bold font-kanit text-amber-300">
+                        คำถามชวนคิดก่อนเรียน: "ปริศนาระบบย่อยของจักรยาน"
+                    </h3>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <div class="lg:col-span-5 bg-slate-950 p-6 rounded-2xl border border-slate-800 text-center relative overflow-hidden">
+                        <!-- Interactive Bicycle Graphic SVG -->
+                        <div class="py-4">
+                            <svg class="w-full h-44 mx-auto text-teal-400" viewBox="0 0 320 180" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                                <!-- Wheels -->
+                                <circle cx="70" cy="120" r="40" stroke="#38bdf8" stroke-width="5" fill="#0f172a" />
+                                <circle cx="70" cy="120" r="10" fill="#38bdf8" />
+                                <circle cx="250" cy="120" r="40" stroke="#38bdf8" stroke-width="5" fill="#0f172a" />
+                                <circle cx="250" cy="120" r="10" fill="#38bdf8" />
+                                <!-- Frame -->
+                                <path d="M 70 120 L 130 120 L 200 65 L 120 65 Z" stroke="#14b8a6" stroke-width="5" />
+                                <path d="M 130 120 L 160 50" stroke="#14b8a6" stroke-width="5" />
+                                <path d="M 250 120 L 200 65" stroke="#14b8a6" stroke-width="5" />
+                                <!-- Handlebar -->
+                                <path d="M 200 65 L 210 40 L 230 40" stroke="#f59e0b" stroke-width="5" />
+                                <!-- Saddle -->
+                                <path d="M 145 50 L 180 50" stroke="#f43f5e" stroke-width="6" />
+                                <!-- Pedals & Chain -->
+                                <circle cx="130" cy="120" r="14" stroke="#a855f7" stroke-width="4" />
+                                <path id="bike-chain" d="M 130 120 L 70 120" stroke="#eab308" stroke-width="4" stroke-dasharray="6 4" class="transition-opacity duration-300" />
+                            </svg>
+                        </div>
+                        <div class="flex justify-center gap-2 mt-2">
+                            <button id="toggle-chain-btn" onclick="toggleBikeChain()" class="text-xs px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition">
+                                <i class="fa-solid fa-link-slash mr-1"></i> <span id="chain-status-text">ทดลอง: ปลดโซ่ออก</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-4">
+                        <p class="text-slate-300 text-sm md:text-base">
+                            ครูภูมิพัฒน์ตั้งคำถามในคาบเรียนว่า: <br>
+                            <span class="text-lg font-bold text-white font-kanit">"ถ้าเราถอดโซ่ขับเคลื่อนออก จักรยานคันนี้ยังจะสามารถขับเคลื่อนไปข้างหน้าได้ตามปกติหรือไม่ เพราะเหตุใด?"</span>
+                        </p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="warmup-options">
+                            <button onclick="checkWarmupAnswer(1)" class="w-full text-left p-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 transition flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-xs shrink-0 font-bold">ก</span>
+                                <span class="text-xs md:text-sm text-slate-200">ยังปั่นได้ปกติ เพราะล้อหน้าและแฮนด์บังคับเลี้ยวยังใช้งานได้</span>
+                            </button>
+                            <button onclick="checkWarmupAnswer(2)" class="w-full text-left p-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 transition flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-teal-500/30 text-teal-300 flex items-center justify-center text-xs shrink-0 font-bold">ข</span>
+                                <span class="text-xs md:text-sm text-slate-200">ขับเคลื่อนไม่ได้ เพราะระบบส่งกำลังพัง แรงปั่นจากบันไดจึงไม่ไปถึงล้อหลัง</span>
+                            </button>
+                            <button onclick="checkWarmupAnswer(3)" class="w-full text-left p-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 transition flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-xs shrink-0 font-bold">ค</span>
+                                <span class="text-xs md:text-sm text-slate-200">ขับเคลื่อนได้ แต่จะเบรกไม่ได้เพราะระบบเบรกขึ้นอยู่กับโซ่</span>
+                            </button>
+                            <button onclick="checkWarmupAnswer(4)" class="w-full text-left p-3.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 transition flex items-start gap-3">
+                                <span class="w-6 h-6 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-xs shrink-0 font-bold">ง</span>
+                                <span class="text-xs md:text-sm text-slate-200">ระบบไฟฟ้าตัดการทำงาน ทำให้จักรยานทรงตัวไม่อยู่</span>
+                            </button>
+                        </div>
+
+                        <!-- Feedback alert box -->
+                        <div id="warmup-feedback" class="hidden p-4 rounded-xl text-sm transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 Pillars Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-900/80 p-5 rounded-2xl border border-blue-500/30 hover:border-blue-400 transition shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl mb-3">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                    </div>
+                    <h4 class="font-bold font-kanit text-blue-300 text-lg">1. ตัวป้อน (Input)</h4>
+                    <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                        สิ่งที่ป้อนเข้าสู่ระบบเพื่อทำให้เกิดการทำงาน เช่น พลังงานไฟฟ้า, วัตถุดิบ, ข้อมูลคำสั่ง, หรือแรงกลจากมนุษย์
+                    </p>
+                </div>
+
+                <div class="bg-slate-900/80 p-5 rounded-2xl border border-amber-500/30 hover:border-amber-400 transition shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl mb-3">
+                        <i class="fa-solid fa-gears"></i>
+                    </div>
+                    <h4 class="font-bold font-kanit text-amber-300 text-lg">2. กระบวนการ (Process)</h4>
+                    <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                        กิจกรรมหรือการดำเนินการเปลี่ยนแปลงวัตถุดิบหรือคำสั่งให้เป็นผลผลิต เช่น การแปลงพลังงานกล, การประมวลผลของชิป
+                    </p>
+                </div>
+
+                <div class="bg-slate-900/80 p-5 rounded-2xl border border-emerald-500/30 hover:border-emerald-400 transition shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl mb-3">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <h4 class="font-bold font-kanit text-emerald-300 text-lg">3. ผลผลิต (Output)</h4>
+                    <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                        ผลลัพธ์หรือเป้าหมายที่ได้จากการทำงานของระบบ เช่น ข้าวสุกหอมกรุ่น, ลมเย็นสบาย, การเคลื่อนที่ไปข้างหน้า
+                    </p>
+                </div>
+
+                <div class="bg-slate-900/80 p-5 rounded-2xl border border-purple-500/30 hover:border-purple-400 transition shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl mb-3">
+                        <i class="fa-solid fa-rotate"></i>
+                    </div>
+                    <h4 class="font-bold font-kanit text-purple-300 text-lg">4. ข้อมูลย้อนกลับ (Feedback)</h4>
+                    <p class="text-xs text-slate-300 mt-1.5 leading-relaxed">
+                        ข้อมูลที่ใช้ประเมินหรือส่งกลับไปควบคุมและปรับปรุงการทำงาน เพื่อให้ระบบทำงานได้เที่ยงตรง ปลอดภัย และมีประสิทธิภาพ
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: ด่านต่อท่อวงจรระบบ (Interactive Pipeline Drag-and-Drop) -->
+        <!-- ========================================== -->
+        <section id="section-pipeline" class="tab-section hidden flex flex-col gap-6">
+            <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                <!-- Level Header -->
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-0.5 rounded-md bg-teal-500/20 text-teal-300 text-xs font-bold font-kanit">ภารกิจที่ 1</span>
+                            <h3 class="text-xl font-bold font-kanit text-white" id="current-puzzle-title">ประกอบวงจร: หม้อหุงข้าวดิจิทัลอัจฉริยะ</h3>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1" id="current-puzzle-desc">
+                            ลากหรือคลิกการ์ดด้านล่างไปวางในกล่องวงจร Input ➔ Process ➔ Output ➔ Feedback ให้ถูกต้อง
+                        </p>
+                    </div>
+
+                    <!-- Level Selector Buttons -->
+                    <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                        <button onclick="loadPuzzleLevel(0)" id="lvl-btn-0" class="px-3 py-1.5 rounded-lg text-xs font-kanit font-semibold bg-teal-500 text-slate-950">1. หม้อหุงข้าว</button>
+                        <button onclick="loadPuzzleLevel(1)" id="lvl-btn-1" class="px-3 py-1.5 rounded-lg text-xs font-kanit font-semibold text-slate-400 hover:text-white">2. แอร์อินเวอร์เตอร์</button>
+                        <button onclick="loadPuzzleLevel(2)" id="lvl-btn-2" class="px-3 py-1.5 rounded-lg text-xs font-kanit font-semibold text-slate-400 hover:text-white">3. จักรยานเสือภูเขา</button>
+                        <button onclick="loadPuzzleLevel(3)" id="lvl-btn-3" class="px-3 py-1.5 rounded-lg text-xs font-kanit font-semibold text-slate-400 hover:text-white">4. เครื่องกดน้ำอัตโนมัติ</button>
+                    </div>
+                </div>
+
+                <!-- Visual Pipeline Diagram -->
+                <div class="my-6 relative">
+                    <!-- Flow Connection line on Desktop -->
+                    <div class="hidden lg:block absolute top-1/2 left-8 right-8 h-1 bg-gradient-to-r from-blue-500 via-amber-500 to-emerald-500 -translate-y-1/2 z-0 opacity-40"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10">
+                        <!-- Slot 1: Input -->
+                        <div class="bg-slate-950/80 rounded-2xl p-4 border-2 border-dashed border-blue-500/50 flex flex-col min-h-[190px] transition-all slot-target" id="slot-input" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'input')">
+                            <div class="flex items-center justify-between text-blue-400 mb-2">
+                                <span class="font-bold font-kanit text-sm flex items-center gap-1.5">
+                                    <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i> ตัวป้อน (Input)
+                                </span>
+                                <span class="text-[10px] bg-blue-500/10 px-2 py-0.5 rounded text-blue-300">ช่อง 1</span>
+                            </div>
+                            <div id="placed-input" class="flex-1 flex items-center justify-center text-xs text-slate-500 italic p-2 text-center">
+                                ลากคำตอบมาวางที่นี่
+                            </div>
+                        </div>
+
+                        <!-- Slot 2: Process -->
+                        <div class="bg-slate-950/80 rounded-2xl p-4 border-2 border-dashed border-amber-500/50 flex flex-col min-h-[190px] transition-all slot-target" id="slot-process" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'process')">
+                            <div class="flex items-center justify-between text-amber-400 mb-2">
+                                <span class="font-bold font-kanit text-sm flex items-center gap-1.5">
+                                    <i class="fa-solid fa-gears text-xs"></i> กระบวนการ (Process)
+                                </span>
+                                <span class="text-[10px] bg-amber-500/10 px-2 py-0.5 rounded text-amber-300">ช่อง 2</span>
+                            </div>
+                            <div id="placed-process" class="flex-1 flex items-center justify-center text-xs text-slate-500 italic p-2 text-center">
+                                ลากคำตอบมาวางที่นี่
+                            </div>
+                        </div>
+
+                        <!-- Slot 3: Output -->
+                        <div class="bg-slate-950/80 rounded-2xl p-4 border-2 border-dashed border-emerald-500/50 flex flex-col min-h-[190px] transition-all slot-target" id="slot-output" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'output')">
+                            <div class="flex items-center justify-between text-emerald-400 mb-2">
+                                <span class="font-bold font-kanit text-sm flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-xs"></i> ผลผลิต (Output)
+                                </span>
+                                <span class="text-[10px] bg-emerald-500/10 px-2 py-0.5 rounded text-emerald-300">ช่อง 3</span>
+                            </div>
+                            <div id="placed-output" class="flex-1 flex items-center justify-center text-xs text-slate-500 italic p-2 text-center">
+                                ลากคำตอบมาวางที่นี่
+                            </div>
+                        </div>
+
+                        <!-- Slot 4: Feedback -->
+                        <div class="bg-slate-950/80 rounded-2xl p-4 border-2 border-dashed border-purple-500/50 flex flex-col min-h-[190px] transition-all slot-target" id="slot-feedback" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'feedback')">
+                            <div class="flex items-center justify-between text-purple-400 mb-2">
+                                <span class="font-bold font-kanit text-sm flex items-center gap-1.5">
+                                    <i class="fa-solid fa-rotate text-xs"></i> ข้อมูลย้อนกลับ (Feedback)
+                                </span>
+                                <span class="text-[10px] bg-purple-500/10 px-2 py-0.5 rounded text-purple-300">ช่อง 4</span>
+                            </div>
+                            <div id="placed-feedback" class="flex-1 flex items-center justify-center text-xs text-slate-500 italic p-2 text-center">
+                                ลากคำตอบมาวางที่นี่
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Available Draggable Cards Pool -->
+                <div class="bg-slate-950 p-4 md:p-5 rounded-2xl border border-slate-800">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-hand-pointer text-teal-400"></i> เลือกชิ้นส่วนที่ถูกต้อง (คลิกการ์ดเพื่อส่งเข้าช่องอัตโนมัติ หรือใช้ลากวาง):
+                        </span>
+                        <button onclick="resetCurrentPuzzle()" class="text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1">
+                            <i class="fa-solid fa-rotate-left"></i> รีเซ็ตช่องวาง
+                        </button>
+                    </div>
+
+                    <div id="cards-pool" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Evaluation Button & Action Bar -->
+                <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+                    <div id="pipeline-status-msg" class="text-sm font-kanit font-medium text-slate-400">
+                        จัดวางชิ้นส่วนให้ครบทั้ง 4 ช่อง แล้วกดตรวจสอบ
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="verifyPipelinePuzzle()" id="verify-pipeline-btn" class="px-6 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold font-kanit shadow-lg shadow-teal-500/20 flex items-center gap-2 transition">
+                            <i class="fa-solid fa-check-double"></i> ตรวจคำตอบวงจร
+                        </button>
+                        <button onclick="nextPuzzleLevel()" id="next-puzzle-btn" class="hidden px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold font-kanit transition flex items-center gap-2">
+                            <span>ด่านถัดไป</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: โหมดวิเคราะห์ระบบพัง (Troubleshooting / Subsystems) -->
+        <!-- ========================================== -->
+        <section id="section-troubleshoot" class="tab-section hidden flex flex-col gap-6">
+            <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                <div class="max-w-3xl">
+                    <div class="flex items-center gap-2 text-rose-400 text-xs font-bold font-kanit mb-1">
+                        <i class="fa-solid fa-shield-halved"></i> ภารกิจที่ 2: วิศวกรซ่อมแซมระบบ
+                    </div>
+                    <h3 class="text-2xl font-bold font-kanit text-white">
+                        วิเคราะห์ความสัมพันธ์ของ "ระบบย่อย" (Subsystems)
+                    </h3>
+                    <p class="text-xs md:text-sm text-slate-300 mt-1">
+                        ตามมาตรฐาน ว 4.1 และตัวชี้วัด ม.4/1 หากส่วนประกอบย่อยทำงานผิดพลาด ระบบในภาพรวมจะสะดุดอย่างไร? จงเลือกการวินิจฉัยที่ถูกต้องที่สุด
+                    </p>
+                </div>
+
+                <!-- Scenario Card -->
+                <div class="mt-6 bg-slate-950 rounded-2xl p-6 border border-slate-800 space-y-6">
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                        <span class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1 rounded-full font-semibold" id="ts-badge">
+                            เคสสถานการณ์ที่ 1 / 4
+                        </span>
+                        <span class="text-xs text-slate-400" id="ts-scenario-tag">หมวด: ระบบเครื่องใช้ในบ้าน</span>
+                    </div>
+
+                    <!-- Problem Statement -->
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-2xl shrink-0 mt-1 border border-rose-500/20">
+                            <i id="ts-icon" class="fa-solid fa-temperature-arrow-up"></i>
+                        </div>
+                        <div>
+                            <h4 id="ts-title" class="text-lg md:text-xl font-bold font-kanit text-white">
+                                สถานการณ์: เทอร์โมสตัท (Thermostat) ในเตารีดไอน้ำชำรุดเสียหาย
+                            </h4>
+                            <p id="ts-desc" class="text-sm text-slate-300 mt-1 leading-relaxed">
+                                นักเรียนเสียบปลั๊กเตารีดและเปิดสวิตช์ทำงาน แต่พบว่า "ตัวตัดอุณหภูมิความร้อน (Thermostat)" ไม่ยอมตัดไฟเมื่อถึงความร้อนที่กำหนด อาการนี้เกิดความบกพร่องที่องค์ประกอบใด และส่งผลต่อภาพรวมอย่างไร?
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 4 Diagnostic Options -->
+                    <div id="ts-options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+
+                    <!-- Troubleshoot Result Box -->
+                    <div id="ts-feedback-box" class="hidden p-4 rounded-xl text-sm transition-all duration-300"></div>
+
+                    <!-- Action buttons -->
+                    <div class="flex justify-end gap-3 pt-2">
+                        <button onclick="nextTroubleshootCase()" id="ts-next-btn" class="hidden px-5 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold font-kanit transition flex items-center gap-2">
+                            <span>วิเคราะห์เคสถัดไป</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: ห้องแล็บทำใบงาน "สิ่งนี้ใช้ยังไง" (Worksheet Studio) -->
+        <!-- ========================================== -->
+        <section id="section-worksheet" class="tab-section hidden flex flex-col gap-6">
+            <!-- Instructions and Header -->
+            <div class="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 shadow-xl no-print">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-semibold mb-2">
+                            <i class="fa-solid fa-file-contract"></i> ชิ้นงานตามแผนการจัดการเรียนรู้ (หน้า 6)
+                        </div>
+                        <h3 class="text-2xl font-bold font-kanit text-white">
+                            ใบงานดิจิทัล: "สิ่งนี้ใช้ยังไง" (System Concept Map)
+                        </h3>
+                        <p class="text-xs md:text-sm text-slate-300 mt-1">
+                            ให้นักเรียนเลือกเครื่องใช้ไฟฟ้าหรือเทคโนโลยี 1 อย่าง แล้วชำแหละองค์ประกอบออกมาเป็นผังความคิด เมื่อทำเสร็จสามารถกด <strong>"พิมพ์ / บันทึก PDF"</strong> เพื่อส่งใน Google Classroom ได้ทันที!
+                        </p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="loadWorksheetTemplate('aircon')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-kanit text-slate-300 border border-slate-700">
+                            ตัวอย่าง: แอร์
+                        </button>
+                        <button onclick="loadWorksheetTemplate('cooker')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-kanit text-slate-300 border border-slate-700">
+                            ตัวอย่าง: หม้อหุงข้าว
+                        </button>
+                        <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold font-kanit text-sm flex items-center gap-2 shadow-lg shadow-amber-500/20">
+                            <i class="fa-solid fa-print"></i> พิมพ์ / บันทึก PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Printable Worksheet Container -->
+            <div id="printable-worksheet" class="print-area bg-white text-slate-900 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-200 transition-all">
+                <!-- Header inside paper -->
+                <div class="border-b-2 border-slate-800 pb-5 mb-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <span class="text-xs font-bold text-teal-800 uppercase tracking-widest">โรงเรียนมัธยมศึกษา • กลุ่มสาระการเรียนรู้การงานอาชีพและเทคโนโลยี</span>
+                            <h2 class="text-2xl md:text-3xl font-extrabold font-kanit text-slate-900 mt-1">
+                                ใบงานเรื่อง: สิ่งนี้ใช้ยังไง (การวิเคราะห์ระบบทางเทคโนโลยี)
+                            </h2>
+                            <p class="text-xs text-slate-600 mt-0.5">
+                                รายวิชา การออกแบบและเทคโนโลยี (ว31105) ชั้นมัธยมศึกษาปีที่ 4 • ภาคเรียนที่ 2
+                            </p>
+                        </div>
+                        <div class="text-right text-xs text-slate-500 hidden sm:block">
+                            ครูผู้สอน: นายภูมิพัฒน์ ชาพาลี
+                        </div>
+                    </div>
+
+                    <!-- Student Identification Input form -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อ - สกุล ผู้เรียน:</label>
+                            <input type="text" id="ws-name" placeholder="นาย/นางสาว รักเรียน มุ่งมั่น" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-teal-500 outline-none bg-white text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">ระดับชั้น / ห้อง:</label>
+                            <input type="text" id="ws-class" value="ม.4 / " placeholder="ม.4/1" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-teal-500 outline-none bg-white text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">เลขที่:</label>
+                            <input type="text" id="ws-no" placeholder="เช่น 12" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-teal-500 outline-none bg-white text-slate-900">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Worksheet Instructions (Verbatim from lesson plan page 6) -->
+                <div class="bg-teal-50 border-l-4 border-teal-600 p-3.5 rounded-r-xl mb-6 text-xs text-slate-700 space-y-1">
+                    <p class="font-bold text-teal-900">คำชี้แจงตามแผนการจัดการเรียนรู้:</p>
+                    <p>ให้นักเรียนเลือกเครื่องใช้ไฟฟ้าหรือเทคโนโลยีรอบตัวมา 1 อย่าง แล้วชำแหละความคิดออกมาเป็น <strong>แผนผังความคิด (Concept Map)</strong> เพื่อแสดงให้เห็นว่าเทคโนโลยีนั้นทำงานได้อย่างไร</p>
+                </div>
+
+                <!-- Chosen Device Selector -->
+                <div class="mb-6">
+                    <label class="block text-sm font-bold font-kanit text-slate-800 mb-1.5">
+                        <i class="fa-solid fa-cube text-teal-600 mr-1"></i> เทคโนโลยีหรือเครื่องใช้ไฟฟ้าที่เลือกวิเคราะห์:
+                    </label>
+                    <input type="text" id="ws-device-name" value="เครื่องปรับอากาศ (Air Conditioner)" placeholder="เช่น ตู้เย็น, ไมโครเวฟ, โดรนสำรวจ, รถยนต์ไฟฟ้า" class="w-full px-4 py-2.5 rounded-xl border-2 border-teal-200 text-base font-kanit font-semibold focus:border-teal-500 outline-none bg-white text-slate-900">
+                </div>
+
+                <!-- Concept Map Visual 4 Quadrants Diagram -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 my-6">
+                    <!-- Box 1: Input -->
+                    <div class="border-2 border-blue-400 bg-blue-50/40 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 text-blue-800 font-bold font-kanit text-base mb-1">
+                                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
+                                ตัวป้อน (Input)
+                            </div>
+                            <p class="text-[11px] text-blue-700 italic mb-2">"ต้องใส่อะไรลงไปบ้าง เครื่องนี้ถึงจะทำงาน?"</p>
+                        </div>
+                        <textarea id="ws-input" rows="4" placeholder="- พลังงานไฟฟ้า 220V&#10;- อุณหภูมิที่ผู้ใช้ตั้งไว้ผ่านรีโมต (เช่น 25°C)&#10;- อากาศร้อนชื้นภายในห้อง" class="w-full p-3 rounded-xl border border-blue-200 text-xs md:text-sm outline-none focus:ring-2 focus:ring-blue-400 bg-white text-slate-800"></textarea>
+                    </div>
+
+                    <!-- Box 2: Process -->
+                    <div class="border-2 border-amber-400 bg-amber-50/40 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 text-amber-800 font-bold font-kanit text-base mb-1">
+                                <span class="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center text-xs">2</span>
+                                กระบวนการ (Process)
+                            </div>
+                            <p class="text-[11px] text-amber-700 italic mb-2">"เครื่องนี้มันทำอะไรกับสิ่งที่เราใส่ลงไป?"</p>
+                        </div>
+                        <textarea id="ws-process" rows="4" placeholder="- มอเตอร์คอมเพรสเซอร์อัดสารทำความเย็น&#10;- คอยล์เย็นดูดซับความร้อนจากอากาศ&#10;- พัดลมโบลเวอร์เป่าอากาศผ่านแผงทำความเย็น" class="w-full p-3 rounded-xl border border-amber-200 text-xs md:text-sm outline-none focus:ring-2 focus:ring-amber-400 bg-white text-slate-800"></textarea>
+                    </div>
+
+                    <!-- Box 3: Output -->
+                    <div class="border-2 border-emerald-400 bg-emerald-50/40 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 text-emerald-800 font-bold font-kanit text-base mb-1">
+                                <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">3</span>
+                                ผลผลิต (Output)
+                            </div>
+                            <p class="text-[11px] text-emerald-700 italic mb-2">"ผลที่ได้คืออะไร?"</p>
+                        </div>
+                        <textarea id="ws-output" rows="4" placeholder="- ลมเย็นสะอาดที่กระจายทั่วห้อง&#10;- อุณหภูมิห้องลดลงเหลือ 25°C ตามต้องการ&#10;- น้ำทิ้งจากการควบแน่นของความชื้น" class="w-full p-3 rounded-xl border border-emerald-200 text-xs md:text-sm outline-none focus:ring-2 focus:ring-emerald-400 bg-white text-slate-800"></textarea>
+                    </div>
+
+                    <!-- Box 4: Feedback -->
+                    <div class="border-2 border-purple-400 bg-purple-50/40 rounded-2xl p-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-2 text-purple-800 font-bold font-kanit text-base mb-1">
+                                <span class="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs">4</span>
+                                ข้อมูลย้อนกลับ (Feedback)
+                            </div>
+                            <p class="text-[11px] text-purple-700 italic mb-2">"ถ้ามันทำงานผิดพลาด หรือถึงค่าที่ตั้งไว้ ระบบรู้ได้อย่างไร?"</p>
+                        </div>
+                        <textarea id="ws-feedback" rows="4" placeholder="- เซนเซอร์วัดอุณหภูมิห้องส่งสัญญาณกลับไปยังชิปควบคุม&#10;- ถ้าห้องเย็นถึง 25°C แล้ว วงจรอินเวอร์เตอร์จะลดรอบคอมเพรสเซอร์เพื่อประหยัดไฟ" class="w-full p-3 rounded-xl border border-purple-200 text-xs md:text-sm outline-none focus:ring-2 focus:ring-purple-400 bg-white text-slate-800"></textarea>
+                    </div>
+                </div>
+
+                <!-- Critical Thinking Reflection question from Lesson Plan Page 3 -->
+                <div class="mt-4 border-2 border-slate-300 rounded-2xl p-4 bg-slate-50">
+                    <label class="block text-xs md:text-sm font-bold text-slate-800 mb-1 font-kanit">
+                        <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> คำถามสะท้อนการเรียนรู้ (Reflection): "หากขาดส่วนประกอบใดไป จะส่งผลกระทบมากที่สุด เพราะอะไร?"
+                    </label>
+                    <textarea id="ws-reflection" rows="3" placeholder="วิเคราะห์: หากเซนเซอร์วัดอุณหภูมิ (Feedback) เสียหาย เครื่องจะไม่รู้ว่าห้องเย็นแล้ว คอมเพรสเซอร์อาจทำงานหนักตลอดเวลาจนไฟไหม้หรือเปลืองไฟมาก..." class="w-full p-3 rounded-xl border border-slate-200 text-xs md:text-sm outline-none focus:ring-2 focus:ring-teal-500 bg-white text-slate-800"></textarea>
+                </div>
+
+                <!-- Footer Teacher Assessment Box (Based on Rubric in Lesson plan page 4 & 8) -->
+                <div class="mt-8 pt-4 border-t border-slate-300 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-600">
+                    <div class="space-y-1">
+                        <span class="font-bold">เกณฑ์การประเมิน (K-P-A):</span>
+                        <div class="flex gap-4">
+                            <span>ความรู้ (K): อธิบาย 4 องค์ประกอบครบ (5 คะแนน)</span>
+                            <span>ทักษะ (P): วิเคราะห์ผังระบบถูกต้อง</span>
+                            <span>เจตคติ (A): ตรงต่อเวลาและรอบคอบ</span>
+                        </div>
+                    </div>
+                    <div class="border border-slate-400 rounded-lg px-4 py-2 text-center bg-white">
+                        <div class="text-[10px] text-slate-500">ผลการประเมิน</div>
+                        <div class="font-kanit font-bold text-slate-800 text-sm">คะแนนรวม: [ ____ / 10 ]</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: สรุป 4 องค์ประกอบ และความรู้ระบบย่อย -->
+    <div id="knowledge-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-teal-500/40 rounded-3xl max-w-2xl w-full p-6 md:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold font-kanit text-white">คู่มือความรู้: ระบบทางเทคโนโลยี</h3>
+                        <p class="text-xs text-slate-400">เนื้อหาตามหลักสูตร ม.4 ว 4.1</p>
+                    </div>
+                </div>
+                <button onclick="closeKnowledgeModal()" class="text-slate-400 hover:text-white p-2">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-sm text-slate-300">
+                <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                    <h4 class="font-bold font-kanit text-teal-300 text-base mb-1">ความหมายของ "ระบบทางเทคโนโลยี"</h4>
+                    <p class="text-xs leading-relaxed text-slate-300">
+                        คือกลุ่มของส่วนประกอบตั้งแต่ 2 ส่วนขึ้นไปที่ทำงานร่วมกัน เพื่อแก้ปัญหา สนองความต้องการ หรืออำนวยความสะดวกแก่มนุษย์
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                    <h4 class="font-bold font-kanit text-amber-300 text-base mb-1">ระบบย่อย (Subsystems) คืออะไร?</h4>
+                    <p class="text-xs leading-relaxed text-slate-300">
+                        ในระบบเทคโนโลยีที่ซับซ้อน มักประกอบด้วย <strong>ระบบย่อยหลายระบบ</strong> ที่ทำงานประสานกัน เช่น จักรยาน ประกอบด้วย:
+                    </p>
+                    <ul class="list-disc list-inside text-xs mt-2 space-y-1 text-slate-400">
+                        <li><strong>ระบบส่งกำลัง/ขับเคลื่อน:</strong> บันไดปั่น, จานโซ่, โซ่, เฟืองหลัง, ล้อหลัง</li>
+                        <li><strong>ระบบบังคับเลี้ยว:</strong> แฮนด์, คอจักรยาน, ตะเกียบ, ล้อหน้า</li>
+                        <li><strong>ระบบเบรก:</strong> มือเบรก, สายสลิง, ก้ามปูเบรก, ผ้าเบรก</li>
+                    </ul>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                    <h4 class="font-bold font-kanit text-rose-300 text-base mb-1">ความสำคัญของ Feedback (ข้อมูลย้อนกลับ)</h4>
+                    <p class="text-xs leading-relaxed text-slate-300">
+                        หากไม่มี Feedback ระบบจะทำงานแบบ Blind (ไม่รู้สถานะตนเอง) เช่น หม้อหุงข้าวที่ไม่มีตัวตรวจจับอุณหภูมิ ข้าวจะไหม้เกรียมและอาจเกิดเพลิงไหม้ได้
+                    </p>
+                </div>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button onclick="closeKnowledgeModal()" class="px-6 py-2.5 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold font-kanit transition">
+                    เข้าใจแล้ว เข้าสู่เกม
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ========================================================
+           STATE MANAGEMENT & SOUND SYNTHESIZER
+           ======================================================== */
+        let gameState = {
+            score: 0,
+            lives: 3,
+            currentPuzzleIndex: 0,
+            currentTsIndex: 0,
+            soundEnabled: true,
+            warmupAnswered: false,
+            bikeChainConnected: true,
+            placedSlots: { input: null, process: null, output: null, feedback: null }
+        };
+
+        // Synthesize Audio using Web Audio API (No external sound files required)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (!gameState.soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioContext();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    // Upward celebratory chime
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.18);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    // Downward error buzz
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(240, now);
+                    osc.frequency.exponentialRampToValueAtTime(110, now + 0.25);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'click') {
+                    // Crisp short click
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'win') {
+                    // High fanfare
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                        const noteOsc = audioCtx.createOscillator();
+                        const noteGain = audioCtx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(audioCtx.destination);
+                        noteOsc.frequency.value = freq;
+                        noteGain.gain.setValueAtTime(0.2, now + i * 0.1);
+                        noteGain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.3);
+                        noteOsc.start(now + i * 0.1);
+                        noteOsc.stop(now + i * 0.1 + 0.35);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio not supported or blocked");
+            }
+        }
+
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (gameState.soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark';
+            }
+        }
+
+        // PUZZLE DATA (Drawn from real curriculum: rice cooker, inverter aircon, mountain bike, smart water dispenser)
+        const puzzleData = [
+            {
+                title: "หม้อหุงข้าวดิจิทัล (Smart Rice Cooker)",
+                desc: "ลากชิ้นส่วน 4 องค์ประกอบเพื่อให้อุปกรณ์หุงข้าวสุกพอดีโดยไม่ไหม้",
+                items: [
+                    { id: 'p1_in', type: 'input', text: 'ข้าว, น้ำ, และพลังงานไฟฟ้า' },
+                    { id: 'p1_pr', type: 'process', text: 'แผ่นความร้อนเปลี่ยนพลังงานไฟฟ้าเป็นความร้อนเพื่อต้มน้ำให้เดือด' },
+                    { id: 'p1_out', type: 'output', text: 'ข้าวสวยสุกพร้อมรับประทาน' },
+                    { id: 'p1_fb', type: 'feedback', text: 'เทอร์โมสตัทตรวจจับอุณหภูมิ เมื่อน้ำแห้งจะตัดเข้าสู่โหมดอุ่น (Warm)' }
+                ]
+            },
+            {
+                title: "เครื่องปรับอากาศอินเวอร์เตอร์ (Inverter Air Conditioner)",
+                desc: "ลากชิ้นส่วนเพื่อให้อุณหภูมิห้องเย็นสม่ำเสมอและประหยัดพลังงาน",
+                items: [
+                    { id: 'p2_in', type: 'input', text: 'ไฟฟ้า 220V และค่าอุณหภูมิที่ตั้งไว้ผ่านรีโมต (เช่น 25°C)' },
+                    { id: 'p2_pr', type: 'process', text: 'คอมเพรสเซอร์อัดสารทำความเย็น และคอยล์เย็นดูดซับความร้อนจากห้อง' },
+                    { id: 'p2_out', type: 'output', text: 'อากาศเย็นสบายตามอุณหภูมิที่กำหนด' },
+                    { id: 'p2_fb', type: 'feedback', text: 'เซนเซอร์วัดอุณหภูมิห้องส่งสัญญาณปรับลดรอบมอเตอร์เพื่อประหยัดไฟ' }
+                ]
+            },
+            {
+                title: "จักรยานเสือภูเขา (Mountain Bicycle)",
+                desc: "ลากชิ้นส่วนระบบกลไกส่งกำลังที่มนุษย์ใช้ขับเคลื่อนไปข้างหน้า",
+                items: [
+                    { id: 'p3_in', type: 'input', text: 'แรงขาของผู้ปั่นที่กดลงบนบันไดปั่น' },
+                    { id: 'p3_pr', type: 'process', text: 'จานหน้าขับเคลื่อนโซ่ ส่งต่อไปยังเฟืองหลังและเพลาล้อ' },
+                    { id: 'p3_out', type: 'output', text: 'การหมุนของล้อหลังทำให้จักรยานเคลื่อนที่ไปข้างหน้า' },
+                    { id: 'p3_fb', type: 'feedback', text: 'สายตาและความรู้สึกของผู้ขับขี่ ปรับเกียร์หรือบีบเบรกเมื่อลงเขา' }
+                ]
+            },
+            {
+                title: "ตู้กดน้ำอัตโนมัติไร้สัมผัส (Touchless Water Dispenser)",
+                desc: "ระบบตรวจจับระยะวัตถุเพื่อจ่ายน้ำดื่มอย่างปลอดภัย",
+                items: [
+                    { id: 'p4_in', type: 'input', text: 'แก้วน้ำที่ยื่นเข้ามา และพลังงานไฟฟ้าเลี้ยงวงจร' },
+                    { id: 'p4_pr', type: 'process', text: 'เซนเซอร์อินฟราเรดส่งสัญญาณให้วาล์วโซลินอยด์เปิดน้ำ' },
+                    { id: 'p4_out', type: 'output', text: 'น้ำดื่มไหลลงสู่แก้วตามปริมาณที่ต้องการ' },
+                    { id: 'p4_fb', type: 'feedback', text: 'เมื่อยกแก้วออก สัญญาณอินฟราเรดขาดหาย สั่งปิดวาล์วน้ำทันที' }
+                ]
+            }
+        ];
+
+        // TROUBLESHOOTING CASES (Subsystem Failure & Impact Analysis)
+        const troubleshootCases = [
+            {
+                title: "เทอร์โมสตัทในเตารีดไอน้ำเสีย (Thermostat Stuck)",
+                badge: "เคสสถานการณ์ที่ 1 / 4",
+                tag: "หมวด: เครื่องใช้ไฟฟ้าในบ้าน",
+                icon: "fa-temperature-arrow-up",
+                desc: "นักเรียนรีดผ้าอยู่แล้วสังเกตว่า เตารีดร้อนจัดจนควันขึ้นและผ้าเริ่มไหม้ ทั้งที่ตั้งความร้อนต่ำ สาเหตุเกิดจากอะไร และเป็นปัญหาขององค์ประกอบใด?",
+                options: [
+                    { text: "กระบวนการ (Process) ขาดพลังงานไฟฟ้ากระแสสลับ", correct: false, reason: "ไม่ถูกต้อง ไฟฟ้ายังมีอยู่ตามปกติจึงทำให้เกิดความร้อน" },
+                    { text: "ข้อมูลย้อนกลับ (Feedback) เสียหาย ทำให้ระบบไม่ตัดไฟเมื่อถึงความร้อนที่กำหนด", correct: true, reason: "ถูกต้อง! เทอร์โมสตัททำหน้าที่เป็น Feedback คอยตัดไฟ หากเสีย ความร้อนจะสูงต่อเนื่องจนอันตราย" },
+                    { text: "ตัวป้อน (Input) ให้น้ำประปามากเกินไป", correct: false, reason: "ปริมาณน้ำไม่ส่งผลต่อการไม่ตัดไฟของเทอร์โมสตัท" },
+                    { text: "ผลผลิต (Output) ได้ไอน้ำน้อยเกินไปจนเครื่องดับ", correct: false, reason: "เตารีดไม่ได้ดับ แต่กลับร้อนเกินเกณฑ์จนไหม้" }
+                ]
+            },
+            {
+                title: "โซ่จักรยานขาดระหว่างทาง (Drive Chain Snapped)",
+                badge: "เคสสถานการณ์ที่ 2 / 4",
+                tag: "หมวด: ระบบกลไกและยานพาหนะ",
+                icon: "fa-link-slash",
+                desc: "ขณะปั่นจักรยานขึ้นสะพาน โซ่จักรยานขาดกระเด็นหลุดออก ผู้ปั่นพยายามออกแรงเหยียบบันไดปั่นอย่างเต็มที่ จะเกิดอะไรขึ้น?",
+                options: [
+                    { text: "บันไดปั่นจะหมุนฟรี ล้อหลังไม่หมุน เพราะระบบย่อยส่งกำลังถูกตัดขาด", correct: true, reason: "ถูกต้อง! โซ่คือตัวกลางในระบบย่อยขับเคลื่อนที่ส่งแรงจากจานหน้าไปสู่เฟืองล้อหลัง เมื่อโซ่ขาด กำลังจึงไปไม่ถึงล้อ" },
+                    { text: "แฮนด์บังคับเลี้ยวจะไม่สามารถหมุนเลี้ยวซ้ายขวาได้", correct: false, reason: "ระบบบังคับเลี้ยวทำงานแยกส่วนจากระบบโซ่ขับเคลื่อน" },
+                    { text: "ล้อหน้าจะล็อกทันทีและทำให้รถคว่ำ", correct: false, reason: "ล้อหน้าหมุนอิสระตามแรงเฉื่อย ไม่ได้ล็อกเพราะโซ่ขาด" },
+                    { text: "จักรยานจะวิ่งเร็วขึ้นเพราะไม่มีแรงต้านทานของโซ่", correct: false, reason: "ไม่มีแรงขับเคลื่อนไปข้างหน้า รถจะชะลอและหยุดลง" }
+                ]
+            },
+            {
+                title: "เซนเซอร์วัดระดับน้ำในหม้อหุงข้าวขัดข้อง",
+                badge: "เคสสถานการณ์ที่ 3 / 4",
+                tag: "หมวด: ระบบอัตโนมัติ",
+                icon: "fa-bowl-rice",
+                desc: "หม้อหุงข้าวไฟฟ้าทำงานปกติ แต่นักเรียนพบว่าข้าวแฉะและน้ำยังไม่แห้ง ทว่าหม้อตัดการทำงานไปที่ปุ่ม Warm (อุ่น) เรียบร้อยแล้ว เกิดจากสาเหตุใด?",
+                options: [
+                    { text: "เซนเซอร์ตรวจจับอุณหภูมิ (Feedback) อ่านค่าผิดพลาดตัดวงจรก่อนเวลาอันควร", correct: true, reason: "ถูกต้อง! ระบบควบคุมได้รับสัญญาณย้อนกลับผิดพลาด จึงสั่งตัดกระบวนการต้มก่อนที่ข้าวจะสุกเต็มที่" },
+                    { text: "ไฟฟ้าที่ป้อนเข้ามามีแรงดันสูงเกิน 220V", correct: false, reason: "หากไฟเกิน ฟิวส์จะขาดหรือเครื่องจะร้อนจัด ไม่ใช่ตัดก่อนเวลาปกติ" },
+                    { text: "หม้อหุงข้าวเปลี่ยนข้าวสารให้กลายเป็นน้ำ", correct: false, reason: "ขัดกับหลักฟิสิกส์และเคมีเบื้องต้น" },
+                    { text: "ตัวป้อน (Input) ไม่มีพลังงานความร้อน", correct: false, reason: "ความร้อนเกิดในขั้นตอน Process จากการแปลงพลังงานไฟฟ้า ไม่ใช่ตัวป้อนโดยตรง" }
+                ]
+            },
+            {
+                title: "แบตเตอรี่ในรีโมตเครื่องปรับอากาศหมดเกลี้ยง",
+                badge: "เคสสถานการณ์ที่ 4 / 4",
+                tag: "หมวด: ระบบควบคุมระยะไกล",
+                icon: "fa-battery-empty",
+                desc: "นักเรียนต้องการเปิดแอร์ที่อุณหภูมิ 25°C แต่แบตเตอรี่ในรีโมตหมด ทำให้กดปุ่มไม่ติด ระบบแอร์นี้สะดุดที่องค์ประกอบใดเป็นอันดับแรก?",
+                options: [
+                    { text: "ตัวป้อน (Input) คำสั่งและสัญญาณอินฟราเรดไม่ถูกส่งเข้าสู่ตัวเครื่อง", correct: true, reason: "ถูกต้อง! สัญญาณคำสั่งคือ Input สำคัญที่กำหนดการทำงานของแอร์ เมื่อไม่มีคำสั่ง ระบบจึงไม่เริ่มกระบวนการ" },
+                    { text: "กระบวนการ (Process) คอมเพรสเซอร์ไหม้ทันที", correct: false, reason: "แอร์ยังไม่ทันได้เริ่มทำงาน คอมเพรสเซอร์จึงยังไม่เสียหาย" },
+                    { text: "ผลผลิต (Output) ได้ความเย็นติดลบ 5 องศาเซลเซียส", correct: false, reason: "เครื่องไม่ทำงานเลย ไม่มีความเย็นเกิดขึ้น" },
+                    { text: "ข้อมูลย้อนกลับ (Feedback) ถูกบันทึกลงคลาวด์อัตโนมัติ", correct: false, reason: "ไม่เกี่ยวข้องกับการขาดคำสั่งเริ่มต้น" }
+                ]
+            }
+        ];
+
+        /* ========================================================
+           TAB SWITCHING LOGIC
+           ======================================================== */
+        function switchTab(tabKey) {
+            playSound('click');
+            const tabs = ['intro', 'pipeline', 'troubleshoot', 'worksheet'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-t` ? `tab-${t}` : '');
+                const sec = document.getElementById(`section-${t}`);
+                if (t === tabKey) {
+                    btn.classList.add('bg-gradient-to-r', 'from-teal-500', 'to-emerald-600', 'text-white', 'shadow-md');
+                    btn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+                    sec.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('bg-gradient-to-r', 'from-teal-500', 'to-emerald-600', 'text-white', 'shadow-md');
+                    btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+                    sec.classList.add('hidden');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        /* ========================================================
+           WARMUP QUESTION & BICYCLE LOGIC (LESSON PLAN INTRO)
+           ======================================================== */
+        function toggleBikeChain() {
+            playSound('click');
+            const chain = document.getElementById('bike-chain');
+            const text = document.getElementById('chain-status-text');
+            gameState.bikeChainConnected = !gameState.bikeChainConnected;
+
+            if (gameState.bikeChainConnected) {
+                chain.style.opacity = '1';
+                text.textContent = 'ทดลอง: ปลดโซ่ออก';
+            } else {
+                chain.style.opacity = '0.08';
+                text.textContent = 'ทดลอง: ใส่โซ่กลับคืน';
+            }
+        }
+
+        function checkWarmupAnswer(choice) {
+            const feedbackBox = document.getElementById('warmup-feedback');
+            feedbackBox.classList.remove('hidden');
+
+            if (choice === 2) {
+                playSound('correct');
+                feedbackBox.className = 'p-4 rounded-xl text-sm bg-emerald-500/20 border border-emerald-500 text-emerald-200 mt-3';
+                feedbackBox.innerHTML = `
+                    <div class="flex items-center gap-2 font-bold font-kanit text-base text-emerald-300 mb-1">
+                        <i class="fa-solid fa-circle-check"></i> ถูกต้องยอดเยี่ยม! (+10 คะแนน)
+                    </div>
+                    จักรยานประกอบด้วยระบบย่อยหลายระบบ <strong>โซ่คือหัวใจของระบบขับเคลื่อน</strong> หากถอดโซ่ออก แรงปั่นจะไม่สามารถส่งต่อไปยังล้อหลังได้ รถจึงไม่เคลื่อนที่ไปข้างหน้าตามที่ครูภูมิพัฒน์ได้อธิบายไว้!
+                `;
+                if (!gameState.warmupAnswered) {
+                    updateScore(10);
+                    gameState.warmupAnswered = true;
+                    confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
+                }
+            } else {
+                playSound('wrong');
+                feedbackBox.className = 'p-4 rounded-xl text-sm bg-rose-500/20 border border-rose-500 text-rose-200 mt-3';
+                feedbackBox.innerHTML = `
+                    <div class="flex items-center gap-2 font-bold font-kanit text-base text-rose-300 mb-1">
+                        <i class="fa-solid fa-circle-xmark"></i> ยังไม่ถูกต้อง ลองพิจารณาใหม่
+                    </div>
+                    ลองสังเกตดูว่า บันไดปั่นทำงานร่วมกับอะไรเพื่อหมุนล้อหลัง? หากไม่มีโซ่ แรงจากขาจะไปถึงล้อได้อย่างไร?
+                `;
+            }
+        }
+
+        /* ========================================================
+           PIPELINE PUZZLE LOGIC (DRAG & DROP / CLICK-TO-SLOT)
+           ======================================================== */
+        let draggedItemData = null;
+
+        function loadPuzzleLevel(index) {
+            playSound('click');
+            gameState.currentPuzzleIndex = index;
+            const current = puzzleData[index];
+
+            // Update Level Buttons
+            for (let i = 0; i < puzzleData.length; i++) {
+                const btn = document.getElementById(`lvl-btn-${i}`);
+                if (i === index) {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-kanit font-semibold bg-teal-500 text-slate-950";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-kanit font-semibold text-slate-400 hover:text-white";
+                }
+            }
+
+            document.getElementById('current-puzzle-title').textContent = `ประกอบวงจร: ${current.title}`;
+            document.getElementById('current-puzzle-desc').textContent = current.desc;
+
+            resetCurrentPuzzle();
+        }
+
+        function resetCurrentPuzzle() {
+            gameState.placedSlots = { input: null, process: null, output: null, feedback: null };
+            ['input', 'process', 'output', 'feedback'].forEach(type => {
+                const slot = document.getElementById(`placed-${type}`);
+                slot.innerHTML = `<span class="italic text-slate-500">ลากคำตอบมาวางที่นี่</span>`;
+                slot.classList.remove('bg-teal-500/20', 'text-teal-200', 'font-medium');
+            });
+
+            document.getElementById('pipeline-status-msg').textContent = 'จัดวางชิ้นส่วนให้ครบทั้ง 4 ช่อง แล้วกดตรวจสอบ';
+            document.getElementById('pipeline-status-msg').className = 'text-sm font-kanit font-medium text-slate-400';
+            document.getElementById('next-puzzle-btn').classList.add('hidden');
+            document.getElementById('verify-pipeline-btn').classList.remove('hidden');
+
+            renderCardsPool();
+        }
+
+        function renderCardsPool() {
+            const current = puzzleData[gameState.currentPuzzleIndex];
+            const pool = document.getElementById('cards-pool');
+            pool.innerHTML = '';
+
+            // Shuffle pool items to challenge students
+            const shuffled = [...current.items].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(item => {
+                const card = document.createElement('div');
+                card.id = `card-${item.id}`;
+                card.draggable = true;
+                card.className = "p-3.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-teal-400 cursor-grab active:cursor-grabbing text-xs text-slate-200 shadow transition-all hover:-translate-y-0.5 select-none";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between text-[10px] text-teal-400 mb-1">
+                        <span><i class="fa-solid fa-grip-vertical mr-1"></i> ชิ้นส่วนระบบ</span>
+                        <span class="text-slate-400">(คลิกเพื่อส่งเข้าช่อง)</span>
+                    </div>
+                    <div class="font-medium text-slate-100">${item.text}</div>
+                `;
+
+                // Drag Events
+                card.addEventListener('dragstart', (e) => {
+                    draggedItemData = item;
+                    e.dataTransfer.setData('text/plain', JSON.stringify(item));
+                    card.classList.add('opacity-50');
+                });
+                card.addEventListener('dragend', () => {
+                    card.classList.remove('opacity-50');
+                });
+
+                // Click event (for mobile or touch users who don't want to drag)
+                card.addEventListener('click', () => {
+                    assignItemToFirstEmptySlot(item);
+                });
+
+                pool.appendChild(card);
+            });
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e, slotType) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            let item = null;
+            try {
+                const data = e.dataTransfer.getData('text/plain');
+                item = JSON.parse(data);
+            } catch (err) {
+                item = draggedItemData;
+            }
+            if (item) {
+                placeItemInSlot(item, slotType);
+            }
+        }
+
+        function placeItemInSlot(item, slotType) {
+            playSound('click');
+            // If already in another slot, clear that slot
+            for (let s in gameState.placedSlots) {
+                if (gameState.placedSlots[s]?.id === item.id) {
+                    gameState.placedSlots[s] = null;
+                    document.getElementById(`placed-${s}`).innerHTML = `<span class="italic text-slate-500">ลากคำตอบมาวางที่นี่</span>`;
+                }
+            }
+
+            gameState.placedSlots[slotType] = item;
+            const slot = document.getElementById(`placed-${slotType}`);
+            slot.innerHTML = `
+                <div class="w-full bg-slate-900/90 p-2.5 rounded-xl border border-teal-500/40 text-xs text-teal-200 flex items-start justify-between gap-2">
+                    <span>${item.text}</span>
+                    <button onclick="removeSlotItem('${slotType}')" class="text-rose-400 hover:text-rose-300 ml-1 text-sm font-bold" title="ลบออก">×</button>
+                </div>
+            `;
+
+            // Hide or fade source card
+            const originalCard = document.getElementById(`card-${item.id}`);
+            if (originalCard) originalCard.classList.add('hidden');
+        }
+
+        function removeSlotItem(slotType) {
+            playSound('click');
+            const item = gameState.placedSlots[slotType];
+            if (!item) return;
+
+            gameState.placedSlots[slotType] = null;
+            document.getElementById(`placed-${slotType}`).innerHTML = `<span class="italic text-slate-500">ลากคำตอบมาวางที่นี่</span>`;
+
+            const originalCard = document.getElementById(`card-${item.id}`);
+            if (originalCard) originalCard.classList.remove('hidden');
+        }
+
+        function assignItemToFirstEmptySlot(item) {
+            const slots = ['input', 'process', 'output', 'feedback'];
+            const empty = slots.find(s => !gameState.placedSlots[s]);
+            if (empty) {
+                placeItemInSlot(item, empty);
+            }
+        }
+
+        function verifyPipelinePuzzle() {
+            const slots = ['input', 'process', 'output', 'feedback'];
+            const empty = slots.find(s => !gameState.placedSlots[s]);
+
+            if (empty) {
+                playSound('wrong');
+                const statusMsg = document.getElementById('pipeline-status-msg');
+                statusMsg.className = 'text-sm font-kanit font-bold text-amber-400 flex items-center gap-2';
+                statusMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-lg"></i> กรุณาวางชิ้นส่วนให้ครบทั้ง 4 ช่องก่อนตรวจสอบ!';
+                return;
+            }
+
+            let allCorrect = true;
+            slots.forEach(slotType => {
+                if (gameState.placedSlots[slotType].type !== slotType) {
+                    allCorrect = false;
+                }
+            });
+
+            const statusMsg = document.getElementById('pipeline-status-msg');
+
+            if (allCorrect) {
+                playSound('correct');
+                playSound('win');
+                statusMsg.className = 'text-sm font-kanit font-bold text-emerald-400 flex items-center gap-2';
+                statusMsg.innerHTML = '<i class="fa-solid fa-circle-check text-lg"></i> วงจรทำงานสมบูรณ์แบบ! รับ +20 คะแนน';
+                updateScore(20);
+                confetti({ particleCount: 70, spread: 80, origin: { y: 0.6 } });
+
+                document.getElementById('verify-pipeline-btn').classList.add('hidden');
+                if (gameState.currentPuzzleIndex < puzzleData.length - 1) {
+                    document.getElementById('next-puzzle-btn').classList.remove('hidden');
+                }
+            } else {
+                playSound('wrong');
+                statusMsg.className = 'text-sm font-kanit font-bold text-rose-400 flex items-center gap-2';
+                statusMsg.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-lg"></i> ยังมีตำแหน่งผิดพลาด! สังเกตหน้าที่ของแต่ละกล่องอีกครั้ง';
+                loseLife();
+            }
+        }
+
+        function nextPuzzleLevel() {
+            if (gameState.currentPuzzleIndex < puzzleData.length - 1) {
+                loadPuzzleLevel(gameState.currentPuzzleIndex + 1);
+            }
+        }
+
+        /* ========================================================
+           TROUBLESHOOTING GAME LOGIC (SUBSYSTEMS ANALYSIS)
+           ======================================================== */
+        function loadTroubleshootCase(index) {
+            gameState.currentTsIndex = index;
+            const item = troubleshootCases[index];
+
+            document.getElementById('ts-badge').textContent = item.badge;
+            document.getElementById('ts-scenario-tag').textContent = item.tag;
+            document.getElementById('ts-title').textContent = item.title;
+            document.getElementById('ts-desc').textContent = item.desc;
+            document.getElementById('ts-icon').className = `fa-solid ${item.icon}`;
+
+            const feedback = document.getElementById('ts-feedback-box');
+            feedback.classList.add('hidden');
+            document.getElementById('ts-next-btn').classList.add('hidden');
+
+            const container = document.getElementById('ts-options-container');
+            container.innerHTML = '';
+
+            item.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "text-left p-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 transition flex items-start gap-3 text-xs md:text-sm text-slate-200";
+                btn.innerHTML = `
+                    <span class="w-6 h-6 rounded-full bg-slate-800 text-teal-400 border border-slate-600 flex items-center justify-center text-xs shrink-0 font-bold">${idx + 1}</span>
+                    <span>${opt.text}</span>
+                `;
+                btn.onclick = () => selectTroubleshootAnswer(opt, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectTroubleshootAnswer(option, btnElement) {
+            const feedback = document.getElementById('ts-feedback-box');
+            feedback.classList.remove('hidden');
+
+            // Disable all option buttons
+            const buttons = document.getElementById('ts-options-container').querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            if (option.correct) {
+                playSound('correct');
+                btnElement.classList.add('border-emerald-500', 'bg-emerald-950/40');
+                feedback.className = "p-4 rounded-xl text-sm bg-emerald-500/20 border border-emerald-500 text-emerald-200";
+                feedback.innerHTML = `
+                    <div class="font-bold font-kanit text-emerald-300 text-base mb-1">
+                        <i class="fa-solid fa-circle-check"></i> วินิจฉัยถูกต้อง! (+15 คะแนน)
+                    </div>
+                    ${option.reason}
+                `;
+                updateScore(15);
+                confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
+
+                if (gameState.currentTsIndex < troubleshootCases.length - 1) {
+                    document.getElementById('ts-next-btn').classList.remove('hidden');
+                }
+            } else {
+                playSound('wrong');
+                btnElement.classList.add('border-rose-500', 'bg-rose-950/40');
+                feedback.className = "p-4 rounded-xl text-sm bg-rose-500/20 border border-rose-500 text-rose-200";
+                feedback.innerHTML = `
+                    <div class="font-bold font-kanit text-rose-300 text-base mb-1">
+                        <i class="fa-solid fa-circle-xmark"></i> วินิจฉัยยังไม่ตรงจุด!
+                    </div>
+                    ${option.reason}
+                `;
+                loseLife();
+                // Allow user to re-try this case
+                setTimeout(() => {
+                    buttons.forEach(b => b.disabled = false);
+                }, 1200);
+            }
+        }
+
+        function nextTroubleshootCase() {
+            playSound('click');
+            if (gameState.currentTsIndex < troubleshootCases.length - 1) {
+                loadTroubleshootCase(gameState.currentTsIndex + 1);
+            }
+        }
+
+        /* ========================================================
+           WORKSHEET TEMPLATES & PRINT LOGIC (PAGE 6 OF PLAN)
+           ======================================================== */
+        function loadWorksheetTemplate(type) {
+            playSound('click');
+            if (type === 'aircon') {
+                document.getElementById('ws-device-name').value = "เครื่องปรับอากาศ (Air Conditioner)";
+                document.getElementById('ws-input').value = "- พลังงานไฟฟ้า 220V\n- อุณหภูมิที่ผู้ใช้ตั้งไว้ผ่านรีโมต (เช่น 25°C)\n- อากาศร้อนชื้นภายในห้อง";
+                document.getElementById('ws-process').value = "- มอเตอร์คอมเพรสเซอร์อัดสารทำความเย็น\n- คอยล์เย็นดูดซับความร้อนจากอากาศ\n- พัดลมโบลเวอร์เป่าอากาศผ่านแผงทำความเย็น";
+                document.getElementById('ws-output').value = "- ลมเย็นสะอาดที่กระจายทั่วห้อง\n- อุณหภูมิห้องลดลงเหลือ 25°C ตามต้องการ\n- น้ำทิ้งจากการควบแน่นของความชื้น";
+                document.getElementById('ws-feedback').value = "- เซนเซอร์วัดอุณหภูมิห้องส่งสัญญาณกลับไปยังชิปควบคุม\n- ถ้าห้องเย็นถึง 25°C แล้ว วงจรอินเวอร์เตอร์จะลดรอบคอมเพรสเซอร์เพื่อประหยัดไฟ";
+                document.getElementById('ws-reflection').value = "หากขาดเซนเซอร์วัดอุณหภูมิ (Feedback) เครื่องจะไม่รู้ว่าห้องเย็นถึงเกณฑ์แล้ว คอมเพรสเซอร์จะทำงานหนักตลอดเวลา ทำให้กินไฟมาก และชิ้นส่วนอาจร้อนจัดจนชำรุด";
+            } else if (type === 'cooker') {
+                document.getElementById('ws-device-name').value = "หม้อหุงข้าวไฟฟ้าแบบดิจิทัล";
+                document.getElementById('ws-input').value = "- ข้าวสารและน้ำสะอาดในอัตราส่วนที่เหมาะสม\n- พลังงานไฟฟ้า\n- การกดเลือกโปรแกรมหุงข้าวที่แผงปุ่มกด";
+                document.getElementById('ws-process').value = "- ขดลวดนำความร้อนเปลี่ยนไฟฟ้าเป็นพลังงานความร้อนเพื่อต้มน้ำ\n- น้ำเดือดกลายเป็นไอและส่งความร้อนให้เมล็ดข้าวสุกพองตัว";
+                document.getElementById('ws-output').value = "- ข้าวสวยหอมนุ่มสุกพร้อมรับประทาน\n- ไอน้ำระบายออกทางช่องฝาหม้อ";
+                document.getElementById('ws-feedback').value = "- แผ่นตรวจจับอุณหภูมิ (Thermostat) วัดความร้อนที่ก้นหม้อ เมื่อน้ำระเหยหมดอุณหภูมิจะพุ่งเกิน 100°C สั่งสลับไปเป็นโหมดอุ่น (Keep Warm)";
+                document.getElementById('ws-reflection').value = "หากขาดเทอร์โมสตัท (Feedback) หม้อจะไม่รู้ว่าน้ำแห้งแล้วและจะไม่ยอมตัดไฟ ส่งผลให้ข้าวไหม้ติดก้นหม้อ และอาจเกิดเพลิงไหม้ได้";
+            }
+        }
+
+        /* ========================================================
+           GLOBAL SCORE & LIVES UTILITIES
+           ======================================================== */
+        function updateScore(points) {
+            gameState.score += points;
+            document.getElementById('score-display').textContent = gameState.score;
+        }
+
+        function loseLife() {
+            if (gameState.lives > 1) {
+                gameState.lives--;
+                renderLives();
+            } else {
+                gameState.lives = 0;
+                renderLives();
+            }
+        }
+
+        function renderLives() {
+            const container = document.getElementById('lives-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const icon = document.createElement('i');
+                if (i < gameState.lives) {
+                    icon.className = 'fa-solid fa-heart text-rose-500';
+                } else {
+                    icon.className = 'fa-regular fa-heart text-slate-600';
+                }
+                container.appendChild(icon);
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            // Toast element removed as requested
+        }
+
+        function openKnowledgeModal() {
+            playSound('click');
+            document.getElementById('knowledge-modal').classList.remove('hidden');
+        }
+
+        function closeKnowledgeModal() {
+            playSound('click');
+            document.getElementById('knowledge-modal').classList.add('hidden');
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            loadPuzzleLevel(0);
+            loadTroubleshootCase(0);
+            renderLives();
+        };
+    </script>
+</body>
+</html>
